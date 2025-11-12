@@ -1,19 +1,13 @@
-# from typing import Literal
 import numpy as np
 import time
-# import matplotlib.pyplot as plt
-# import scipy.signal as signal
-import csv
 import plotly.graph_objs as go
 import plotly.offline as pof
 from plotly.subplots import make_subplots
-import json
-# import random
 from enum import Enum, auto
 import pandas as pd
 
 class DataType(Enum):
-    RcfOut, DeciOut, FreqResp, BfOut, FftIn, FftOut, AddMuxOut, RearSwOut = auto(), auto(), auto(), auto(), auto(), auto(), auto(), auto()
+    RcfOut, DeciOut, FreqResp, BfOut, AddMuxOut = auto(), auto(), auto(), auto(), auto()
 
 def bin2dec(bin_data, frac_bit=12):
     dec_data = 0
@@ -27,15 +21,33 @@ def bin2dec(bin_data, frac_bit=12):
             if s == "0":
                 dec_data += 2**(len(bin_data)-1-i)
         dec_data += 1
-        return -dec_data / 2**frac_bit
+        return -dec_data / 2**frac_bit    
 
-def parser(data, data_type, frac_bit=13):
+def parser(data, data_type):
     if data_type==DataType.BfOut:
-        parsed_data = []
-        for j in range(3):
-            lsb = 128-34*j
-            parsed_data.append(bin2dec(data[(lsb-17):(lsb)], frac_bit) + 1j*bin2dec(data[(lsb-34):(lsb-17)], frac_bit))
-        return parsed_data
+        n_bit = 17
+        n_seg = 3
+    else:
+        n_bit = 16
+        n_seg = 4
+
+    if data_type==DataType.AddMuxOut:
+        total_n_bit = 512
+    else:
+        total_n_bit = 128
+
+    if data_type==DataType.RcfOut:
+        frac_bit = 15
+    elif data_type==DataType.FreqResp or data_type==DataType.DeciOut:
+        frac_bit = 14
+    else:
+        frac_bit = 13
+
+    parsed_data = []
+    for j in range(n_seg):
+        lsb = total_n_bit-n_bit*2*j
+        parsed_data.append(bin2dec(data[(lsb-n_bit):(lsb)], frac_bit) + 1j*bin2dec(data[(lsb-n_bit*2):(lsb-n_bit)], frac_bit))
+    return parsed_data
 
 def parse_ila_data(file_path, data_probe_name, valid_probe_name, data_type):
     df = pd.read_csv(file_path, header=None, skiprows=[1])
@@ -57,9 +69,9 @@ def parse_ila_data(file_path, data_probe_name, valid_probe_name, data_type):
 if __name__ == "__main__":
     font_size = 20
     bf_out = parse_ila_data(file_path="./ila_data/replica_test_case_0_bf_out.csv",
-                              data_probe_name = "fpga_block_design_i/datapath/system_ila_0/inst/probe0_1[127:0]",
-                              valid_probe_name = "fpga_block_design_i/datapath/system_ila_0/inst/probe1_1",
-                              data_type=DataType.BfOut)
+                            data_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/probe0_1[127:0]",
+                            valid_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/probe1_1",
+                            data_type=DataType.BfOut)
     figure = make_subplots(rows=2, cols=1)
     figure.add_trace(go.Scatter(y=bf_out.real), row=1, col=1)
     figure.add_trace(go.Scatter(y=bf_out.imag), row=2, col=1)
