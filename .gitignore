@@ -1,2 +1,6 @@
 /backup
 /ila_data
+/src_fmt_out_anal/out_json
+/src_fmt_out_anal/bins
+/src_fmt_out_anal/__pycache__
+*.bin

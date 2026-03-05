@@ -106,46 +106,13 @@ def parse_ila_data(file_path, data_probe_name, valid_probe_name, data_type, ch_i
 
 if __name__ == "__main__":
     font_size = 20
-    # # bf_out = parse_ila_data(file_path="./ila_data/replica_test_case_0_bf_out.csv",
-    # #                         data_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/probe0_1[127:0]",
-    # #                         valid_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/probe1_1",
-    # #                         data_type=DataType.BfOut)
-    # deci_out = parse_ila_data(file_path="./ila_data/replica_test_case_0.csv",
-    #                         data_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/probe0_1[127:0]",
-    #                         valid_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/probe1_1",
-    #                         data_type=DataType.DeciOut)
-    # add_mux_out = parse_ila_data(file_path="./ila_data/replica_test_case_0_add_mux_out.csv",
-    #                         data_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/net_slot_0_axis_tdata[511:0]",
-    #                         valid_probe_name="fpga_block_design_i/datapath/system_ila_0/inst/net_slot_0_axis_tvalid",
-    #                         data_type=DataType.AddMuxOut,
-    #                         ch_idx=0)
-    # deci_out_pad = np.concatenate([deci_out, np.zeros(len(add_mux_out)-len(deci_out))+1j*np.zeros(len(add_mux_out)-len(deci_out))])
-    # figure = make_subplots(rows=2, cols=1)
-    # # figure.add_trace(go.Scatter(y=deci_out.real), row=1, col=1)
-    # # figure.add_trace(go.Scatter(y=deci_out.imag), row=2, col=1)
-    # # figure.add_trace(go.Scatter(y=add_mux_out.real), row=1, col=1)
-    # # figure.add_trace(go.Scatter(y=add_mux_out.imag), row=2, col=1)
-    # figure.add_trace(go.Scatter(y=deci_out_pad.real), row=1, col=1)
-    # figure.add_trace(go.Scatter(y=add_mux_out.real), row=1, col=1)
-    # figure.add_trace(go.Scatter(y=deci_out_pad.real-add_mux_out.real), row=2, col=1)
-    # # for i in range(5):
-    # #     figure.add_vline(x=384*(i+1), line_dash="dash", row=1, col=1)
-    # #     figure.add_vline(x=384*(i+1), line_dash="dash", row=2, col=1)
-    # pof.iplot(figure)
-
+    sync_pat = "1111100101110101001100010010010001101000111110011111100111111001"
     data = ""
-    data += parse_ila_data(file_path="./ila_data/replica_test_case_0_0_sf_out_wrong.csv",
-                    data_probe_name="fpga_block_design_i/SerDes/SerDes_DPM2/system_ila_serdes_250M/inst/net_slot_0_axis_tdata[63:0]",
-                    valid_probe_name="fpga_block_design_i/SerDes/SerDes_DPM2/system_ila_serdes_250M/inst/net_slot_0_axis_tvalid",
-                    data_type=DataType.SfOut)
-    # data += parse_ila_data(file_path="./ila_data/replica_test_case_0_0_sf_out.csv",
-    #                 data_probe_name="fpga_block_design_i/SerDes/SerDes_DPM2/system_ila_serdes_250M/inst/net_slot_0_axis_tdata[63:0]",
-    #                 valid_probe_name="fpga_block_design_i/SerDes/SerDes_DPM2/system_ila_serdes_250M/inst/net_slot_0_axis_tvalid",
-    #                 data_type=DataType.SfOut)
-    # data += parse_ila_data(file_path="./ila_data/replica_test_case_0_0_sf_out.csv",
-    #                 data_probe_name="fpga_block_design_i/SerDes/SerDes_DPM2/system_ila_serdes_250M/inst/net_slot_0_axis_tdata[63:0]",
-    #                 valid_probe_name="fpga_block_design_i/SerDes/SerDes_DPM2/system_ila_serdes_250M/inst/net_slot_0_axis_tvalid",
-    #                 data_type=DataType.SfOut)
-    print(len(data))
-    write_binary_string_to_file(data, "./bins/test.bin")
+    data += parse_ila_data(file_path="./ila_data/sf_out.csv",
+                           data_probe_name="fpga_block_design_i/datapath/system_ila_1/inst/net_slot_2_axis_tdata[63:0]",
+                           valid_probe_name="fpga_block_design_i/datapath/system_ila_1/inst/net_slot_2_axis_tvalid",
+                           data_type=DataType.SfOut)
+    segments = data.split(sync_pat)
+    for i in range(4):
+        write_binary_string_to_file(sync_pat + segments[i+1], f"./bins/output_{i}.bin")
     print("DONE")
